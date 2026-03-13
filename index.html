@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1E3D08">
+<title>Mais Cacau — Estimativa de Produtividade</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde-escuro: #1E3D08;
+    --verde: #2D5A0E;
+    --verde-medio: #3D7A1A;
+    --verde-claro: #6AAF30;
+    --verde-suave: #EBF5E0;
+    --ouro: #B8860B;
+    --ouro-claro: #F5D060;
+    --marrom: #4A2506;
+    --bege: #FAF6EE;
+    --bege2: #F2EAD8;
+    --texto: #1A1A1A;
+    --texto2: #555;
+    --branco: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bege);
+    color: var(--texto);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── TELAS ─────────────────────────────────────────────── */
+  .tela { display: none; min-height: 100vh; flex-direction: column; animation: fadeIn .35s ease; }
+  .tela.ativa { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── HOME ──────────────────────────────────────────────── */
+  #home {
+    background: linear-gradient(160deg, var(--verde-escuro) 0%, var(--verde) 50%, var(--verde-medio) 100%);
+    align-items: center; justify-content: center; padding: 40px 28px; text-align: center; position: relative; overflow: hidden;
+  }
+  #home::before {
+    content: '';
+    position: absolute; top: -80px; right: -80px;
+    width: 260px; height: 260px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); pointer-events: none;
+  }
+  #home::after {
+    content: '';
+    position: absolute; bottom: -60px; left: -60px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.03); pointer-events: none;
+  }
+  .home-badge {
+    width: 110px; height: 110px; border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 2px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 52px; margin: 0 auto 28px; backdrop-filter: blur(4px);
+  }
+  .home-title {
+    font-family: 'Fraunces', serif;
+    font-size: 48px; font-weight: 900; color: #fff;
+    line-height: 1; letter-spacing: -1px; margin-bottom: 6px;
+  }
+  .home-proj {
+    font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ouro-claro); margin-bottom: 32px;
+  }
+  .home-divider {
+    width: 50px; height: 3px;
+    background: linear-gradient(90deg, var(--ouro-claro), transparent);
+    border-radius: 2px; margin: 0 auto 28px;
+  }
+  .home-desc {
+    font-size: 15px; line-height: 1.7; color: rgba(255,255,255,0.75);
+    max-width: 320px; margin: 0 auto 48px;
+  }
+
+  /* ── HEADER ────────────────────────────────────────────── */
+  .header {
+    background: var(--verde-escuro);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; position: sticky; top: 0; z-index: 10;
+  }
+  .header-title { font-size: 16px; font-weight: 700; color: #fff; }
+  .btn-back {
+    font-size: 13px; font-weight: 600; color: #A8D870;
+    background: none; border: none; cursor: pointer; padding: 4px 0;
+  }
+  .header-spacer { width: 56px; }
+
+  /* ── INFO BAR ───────────────────────────────────────────── */
+  .info-bar {
+    background: var(--verde); padding: 8px 20px; text-align: center;
+    font-size: 12px; color: #C8F08A; font-weight: 500; letter-spacing: 0.3px;
+  }
+
+  /* ── SCROLL CONTENT ─────────────────────────────────────── */
+  .scroll-body { flex: 1; overflow-y: auto; padding: 24px 20px 40px; }
+
+  /* ── SECTION TITLE ──────────────────────────────────────── */
+  .sec-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--verde); margin: 24px 0 12px;
+  }
+
+  /* ── CHIPS ──────────────────────────────────────────────── */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .chip {
+    padding: 9px 16px; border-radius: 20px; border: 2px solid #D5D5D5;
+    background: #fff; font-size: 14px; font-weight: 600; color: #666;
+    cursor: pointer; transition: all .2s;
+  }
+  .chip.sel { border-color: var(--verde); background: var(--verde); color: #fff; }
+
+  /* ── CLONE LIST ─────────────────────────────────────────── */
+  .clone-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 14px; margin-bottom: 6px;
+    background: #fff; border-radius: 10px; border: 2px solid #EBEBEB;
+    cursor: pointer; transition: all .2s;
+  }
+  .clone-item.sel { border-color: var(--verde); background: var(--verde-suave); }
+  .radio {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid #C5C5C5; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; transition: border-color .2s;
+  }
+  .clone-item.sel .radio { border-color: var(--verde); }
+  .radio-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--verde); display: none;
+  }
+  .clone-item.sel .radio-dot { display: block; }
+  .clone-nome { flex: 1; font-size: 14px; color: #444; }
+  .clone-item.sel .clone-nome { color: var(--verde); font-weight: 700; }
+  .clone-fr { font-size: 11px; font-weight: 700; color: var(--ouro); background: #FFF8E0; padding: 3px 8px; border-radius: 10px; }
+
+  /* ── PLANTAS ────────────────────────────────────────────── */
+  .instrucao {
+    font-size: 13px; color: #666; line-height: 1.65;
+    background: #fff; padding: 14px; border-radius: 10px; margin-bottom: 20px;
+    border-left: 4px solid var(--verde-claro);
+  }
+  .planta-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .planta-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--verde); color: #fff;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .planta-label { flex: 1; font-size: 14px; color: #444; }
+  .planta-input {
+    width: 90px; height: 42px; border: 2px solid #D5D5D5;
+    border-radius: 8px; text-align: center; font-size: 16px;
+    font-family: 'DM Sans', sans-serif; font-weight: 600;
+    color: var(--texto); background: #fff; outline: none; transition: border-color .2s;
+  }
+  .planta-input:focus { border-color: var(--verde); }
+  .planta-input.filled { border-color: var(--verde); background: var(--verde-suave); }
+
+  /* ── PROGRESSO ──────────────────────────────────────────── */
+  .prog-wrap { margin: 20px 0 6px; }
+  .prog-bar { height: 6px; background: #E0E0E0; border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--verde-claro); border-radius: 3px; transition: width .3s; }
+  .prog-text { font-size: 12px; color: #999; text-align: center; margin-top: 6px; margin-bottom: 24px; }
+
+  /* ── RESULTADO ──────────────────────────────────────────── */
+  #resultado { background: var(--bege2); }
+  .res-card {
+    background: #fff; border-radius: 16px; padding: 32px 24px;
+    text-align: center; border: 3px solid #ccc;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); margin-bottom: 16px;
+  }
+  .res-emoji { font-size: 52px; margin-bottom: 10px; }
+  .res-num {
+    font-family: 'Fraunces', serif;
+    font-size: 72px; font-weight: 900; line-height: 1; letter-spacing: -2px;
+  }
+  .res-unit { font-size: 13px; color: #999; margin-bottom: 14px; }
+  .nivel-badge {
+    display: inline-block; padding: 6px 22px; border-radius: 20px;
+    font-size: 13px; font-weight: 700;
+  }
+
+  .detalhe-card {
+    background: #fff; border-radius: 12px; padding: 18px;
+    margin-bottom: 14px;
+  }
+  .detalhe-titulo { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--verde); margin-bottom: 14px; }
+  .detalhe-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #F0F0F0; }
+  .detalhe-row:last-child { border-bottom: none; }
+  .detalhe-key { font-size: 13px; color: #888; }
+  .detalhe-val { font-size: 13px; color: #333; font-weight: 600; text-align: right; max-width: 55%; }
+
+  .formula-card {
+    background: rgba(74,37,6,0.07); border-radius: 12px; padding: 16px; margin-bottom: 28px;
+  }
+  .formula-titulo { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--marrom); margin-bottom: 10px; }
+  .formula-texto { font-size: 13px; color: #666; line-height: 1.6; font-style: italic; margin-bottom: 6px; }
+  .formula-calc { font-size: 13px; color: #444; margin-top: 4px; }
+
+  .rodape { text-align: center; font-size: 11px; color: #BBB; margin-top: 16px; padding-bottom: 20px; }
+
+  /* ── BOTÕES ─────────────────────────────────────────────── */
+  .btn-primary {
+    display: block; width: 100%; padding: 17px;
+    background: var(--verde); color: #fff;
+    border: none; border-radius: 12px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
+    letter-spacing: 0.3px; transition: background .2s, transform .1s;
+    box-shadow: 0 4px 14px rgba(45,90,14,0.35); margin-top: 8px;
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { background: #B0B0B0; box-shadow: none; cursor: default; }
+  .btn-secondary {
+    display: block; width: 100%; padding: 15px;
+    background: transparent; color: var(--verde);
+    border: 2px solid var(--verde); border-radius: 12px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700;
+    margin-top: 10px; transition: all .2s;
+  }
+  .btn-secondary:active { background: var(--verde-suave); }
+</style>
+</head>
+<body>
+
+<!-- ══ TELA 1: HOME ══════════════════════════════════════════════════════ -->
+<div id="home" class="tela ativa">
+  <div class="home-badge">🍫</div>
+  <div class="home-title">Mais Cacau</div>
+  <div class="home-proj">Projeto Mais Inteligência Mais Cacau</div>
+  <div class="home-divider"></div>
+  <div class="home-desc">
+    Calcule a produtividade estimada do seu talhão avaliando 15 plantas representativas com rapidez e precisão.
+  </div>
+  <button class="btn-primary" style="max-width:320px;" onclick="ir('config')">Iniciar Estimativa</button>
+</div>
+
+<!-- ══ TELA 2: CONFIG ════════════════════════════════════════════════════ -->
+<div id="config" class="tela">
+  <div class="header">
+    <button class="btn-back" onclick="ir('home')">← Voltar</button>
+    <span class="header-title">Configuração</span>
+    <div class="header-spacer"></div>
+  </div>
+  <div class="scroll-body">
+
+    <div class="sec-title">Número de Plantas por Hectare</div>
+    <div class="chips" id="chips-plantas"></div>
+
+    <div class="sec-title">Material Predominante</div>
+    <div id="lista-clones"></div>
+
+    <button class="btn-primary" id="btn-proximo" onclick="irParaPlantas()" disabled>Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ TELA 3: PLANTAS ═══════════════════════════════════════════════════ -->
+<div id="plantas" class="tela">
+  <div class="header">
+    <button class="btn-back" onclick="ir('config')">← Voltar</button>
+    <span class="header-title">Contagem de Frutos</span>
+    <div class="header-spacer"></div>
+  </div>
+  <div class="info-bar" id="info-bar">—</div>
+  <div class="scroll-body">
+    <div class="instrucao">
+      🌿 Selecione 15 plantas distribuídas pelo talhão e conte os frutos em cada uma. Preencha os campos abaixo:
+    </div>
+    <div id="lista-plantas"></div>
+    <div class="prog-wrap">
+      <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="prog-text" id="prog-text">0/15 plantas preenchidas</div>
+    <button class="btn-primary" onclick="calcular()">Calcular Produtividade</button>
+  </div>
+</div>
+
+<!-- ══ TELA 4: RESULTADO ════════════════════════════════════════════════ -->
+<div id="resultado" class="tela">
+  <div class="header">
+    <div class="header-spacer"></div>
+    <span class="header-title">Resultado</span>
+    <div class="header-spacer"></div>
+  </div>
+  <div class="scroll-body">
+    <div class="res-card" id="res-card">
+      <div class="res-emoji" id="res-emoji">🏆</div>
+      <div class="res-num" id="res-num">—</div>
+      <div class="res-unit">kg de amêndoa seca / ha</div>
+      <span class="nivel-badge" id="nivel-badge">—</span>
+    </div>
+
+    <div class="detalhe-card">
+      <div class="detalhe-titulo">Detalhes do Cálculo</div>
+      <div class="detalhe-row"><span class="detalhe-key">Clone/Variedade</span><span class="detalhe-val" id="d-clone">—</span></div>
+      <div class="detalhe-row"><span class="detalhe-key">Plantas por hectare</span><span class="detalhe-val" id="d-plantas">—</span></div>
+      <div class="detalhe-row"><span class="detalhe-key">Média de frutos/planta</span><span class="detalhe-val" id="d-media">—</span></div>
+      <div class="detalhe-row"><span class="detalhe-key">Frutos para 1 kg amêndoa</span><span class="detalhe-val" id="d-frutoskg">—</span></div>
+      <div class="detalhe-row"><span class="detalhe-key">Produtividade estimada</span><span class="detalhe-val" id="d-prod" style="font-weight:800">—</span></div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-titulo">Fórmula Utilizada</div>
+      <div class="formula-texto">Produtividade = (Σ frutos ÷ 15) ÷ frutos/kg × plantas/ha</div>
+      <div class="formula-calc" id="formula-calc">—</div>
+    </div>
+
+    <button class="btn-primary" onclick="novaEstimativa()">Nova Estimativa</button>
+    <div class="rodape">Projeto Mais Inteligência Mais Cacau</div>
+  </div>
+</div>
+
+<script>
+const CLONES = [
+  { label: 'Cacau Comum',  frutos: 24 },
+  { label: 'BN 34',        frutos: 19 },
+  { label: 'CCN 10',       frutos: 10 },
+  { label: 'CCN 51',       frutos: 13 },
+  { label: 'CEPEC 2002',   frutos: 24 },
+  { label: 'CEPEC 2004',   frutos: 15 },
+  { label: 'FA 13',        frutos: 33 },
+  { label: 'PH 16',        frutos: 17 },
+  { label: 'PS 1319',      frutos: 19 },
+  { label: 'Salobrinho 03',frutos: 26 },
+  { label: 'SJ 02',        frutos: 21 },
+];
+
+const PLANTAS_HA = [400, 500, 555, 625, 714, 816, 1000, 1111, 1250];
+
+let estado = { plantasHectare: null, material: null, frutos: Array(15).fill('') };
+
+// ── NAVEGAÇÃO ───────────────────────────────────────────────
+function ir(telaId) {
+  document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+  document.getElementById(telaId).classList.add('ativa');
+  window.scrollTo(0, 0);
+}
+
+// ── INIT CONFIG ─────────────────────────────────────────────
+function initConfig() {
+  // chips plantas
+  const chipsEl = document.getElementById('chips-plantas');
+  chipsEl.innerHTML = '';
+  PLANTAS_HA.forEach(p => {
+    const c = document.createElement('button');
+    c.className = 'chip' + (estado.plantasHectare === p ? ' sel' : '');
+    c.textContent = p;
+    c.onclick = () => {
+      estado.plantasHectare = p;
+      document.querySelectorAll('.chip').forEach(x => x.classList.remove('sel'));
+      c.classList.add('sel');
+      verificarProximo();
+    };
+    chipsEl.appendChild(c);
+  });
+
+  // lista clones
+  const listaEl = document.getElementById('lista-clones');
+  listaEl.innerHTML = '';
+  CLONES.forEach(cl => {
+    const row = document.createElement('div');
+    row.className = 'clone-item' + (estado.material === cl.label ? ' sel' : '');
+    row.innerHTML = `
+      <div class="radio"><div class="radio-dot"></div></div>
+      <span class="clone-nome">${cl.label}</span>
+      <span class="clone-fr">${cl.frutos} fr/kg</span>`;
+    row.onclick = () => {
+      estado.material = cl.label;
+      document.querySelectorAll('.clone-item').forEach(x => x.classList.remove('sel'));
+      row.classList.add('sel');
+      verificarProximo();
+    };
+    listaEl.appendChild(row);
+  });
+
+  verificarProximo();
+}
+
+function verificarProximo() {
+  document.getElementById('btn-proximo').disabled = !(estado.plantasHectare && estado.material);
+}
+
+// ── IR PARA PLANTAS ─────────────────────────────────────────
+function irParaPlantas() {
+  if (!estado.plantasHectare || !estado.material) return;
+  document.getElementById('info-bar').textContent =
+    `📋 ${estado.material}  ·  🌱 ${estado.plantasHectare} pl/ha`;
+  initPlantas();
+  ir('plantas');
+}
+
+function initPlantas() {
+  const lista = document.getElementById('lista-plantas');
+  lista.innerHTML = '';
+  estado.frutos = Array(15).fill('');
+
+  for (let i = 0; i < 15; i++) {
+    const row = document.createElement('div');
+    row.className = 'planta-row';
+    row.innerHTML = `
+      <div class="planta-num">${i + 1}</div>
+      <span class="planta-label">Planta ${String(i+1).padStart(2,'0')}</span>
+      <input class="planta-input" type="number" inputmode="numeric" min="0" max="999"
+        placeholder="Frutos" id="fruto-${i}" oninput="atualizarFruto(${i}, this.value)">`;
+    lista.appendChild(row);
+  }
+  atualizarProgresso();
+}
+
+function atualizarFruto(i, val) {
+  estado.frutos[i] = val === '' ? '' : String(parseInt(val) || 0);
+  const inp = document.getElementById(`fruto-${i}`);
+  inp.classList.toggle('filled', val !== '');
+  atualizarProgresso();
+}
+
+function atualizarProgresso() {
+  const count = estado.frutos.filter(f => f !== '').length;
+  document.getElementById('prog-fill').style.width = `${(count/15)*100}%`;
+  document.getElementById('prog-text').textContent = `${count}/15 plantas preenchidas`;
+}
+
+// ── CALCULAR ────────────────────────────────────────────────
+function calcular() {
+  const preenchidos = estado.frutos.filter(f => f !== '');
+  if (preenchidos.length < 15) {
+    alert('Por favor, preencha todos os 15 campos antes de calcular.');
+    return;
+  }
+
+  const soma = estado.frutos.reduce((a, f) => a + (parseInt(f) || 0), 0);
+  const media = soma / 15;
+  const clone = CLONES.find(c => c.label === estado.material);
+  const prod = (media / clone.frutos) * estado.plantasHectare;
+  const prodArred = prod.toFixed(0);
+
+  // nível
+  let nivel;
+  if (prod >= 1500) nivel = { label: 'Alta', cor: '#27AE60', emoji: '🏆' };
+  else if (prod >= 800) nivel = { label: 'Média', cor: '#E67E22', emoji: '📈' };
+  else nivel = { label: 'Baixa', cor: '#E74C3C', emoji: '⚠️' };
+
+  // preenche resultado
+  document.getElementById('res-emoji').textContent = nivel.emoji;
+  document.getElementById('res-num').textContent = prodArred;
+  document.getElementById('res-num').style.color = nivel.cor;
+  document.getElementById('res-card').style.borderColor = nivel.cor;
+
+  const badge = document.getElementById('nivel-badge');
+  badge.textContent = `Produtividade ${nivel.label}`;
+  badge.style.color = nivel.cor;
+  badge.style.background = nivel.cor + '20';
+
+  document.getElementById('d-clone').textContent = estado.material;
+  document.getElementById('d-plantas').textContent = estado.plantasHectare;
+  document.getElementById('d-media').textContent = media.toFixed(1);
+  document.getElementById('d-frutoskg').textContent = clone.frutos;
+  document.getElementById('d-prod').textContent = `${prodArred} kg/ha`;
+  document.getElementById('d-prod').style.color = nivel.cor;
+
+  document.getElementById('formula-calc').innerHTML =
+    `= (${soma} ÷ 15) ÷ ${clone.frutos} × ${estado.plantasHectare}<br>` +
+    `<strong style="color:${nivel.cor}">= ${prodArred} kg/ha</strong>`;
+
+  ir('resultado');
+}
+
+// ── NOVA ESTIMATIVA ─────────────────────────────────────────
+function novaEstimativa() {
+  estado = { plantasHectare: null, material: null, frutos: Array(15).fill('') };
+  ir('home');
+}
+
+// ── INICIALIZAR ─────────────────────────────────────────────
+document.getElementById('config').addEventListener('animationstart', initConfig);
+// Garante init ao entrar na tela de config via botão home
+const origIr = ir;
+window.ir = function(id) {
+  origIr(id);
+  if (id === 'config') initConfig();
+};
+</script>
+</body>
+</html>
